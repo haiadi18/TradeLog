@@ -163,6 +163,32 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .note-lbl{font-size:8.5px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
 .note-txt{font-size:11px;color:var(--text2);line-height:1.55}
 
+/* ── CARD ACTIONS ── */
+.card-actions{display:flex;gap:5px;margin-left:6px;flex-shrink:0}
+.ca-btn{background:transparent;border:1px solid var(--border);border-radius:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .12s;padding:0}
+.ca-btn:hover{color:var(--text);border-color:var(--border2)}
+.ca-btn.del:hover{color:var(--red);border-color:#331818;background:#130808}
+.ca-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── EDIT MODAL ── */
+.edit-modal{background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:22px;width:480px;max-width:96vw;max-height:88vh;overflow-y:auto}
+.edit-modal::-webkit-scrollbar{width:3px}
+.edit-modal::-webkit-scrollbar-thumb{background:var(--border2)}
+.ef-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.ef-full{grid-column:1/-1}
+.ef-group{display:flex;flex-direction:column;gap:4px}
+.ef-label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.ef-input,.ef-select,.ef-textarea{background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 10px;outline:none;width:100%;transition:border-color .12s}
+.ef-input:focus,.ef-select:focus,.ef-textarea:focus{border-color:#333}
+.ef-select{cursor:pointer;appearance:none;-webkit-appearance:none}
+.ef-textarea{resize:vertical;min-height:52px;line-height:1.55}
+.ef-select option{background:var(--bg3)}
+.edit-actions{display:flex;gap:8px;margin-top:16px}
+.edit-save{flex:1;background:var(--green);color:#000;border:none;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:10px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:opacity .12s}
+.edit-save:hover{opacity:.82}
+.edit-cancel{background:transparent;color:var(--text3);border:1px solid var(--border2);border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px 16px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .12s}
+.edit-cancel:hover{color:var(--text);border-color:#333}
+
 /* ── API KEY MODAL ── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:200}
 .overlay.hidden{display:none}
@@ -287,6 +313,54 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 
     <button class="modal-btn" id="modalSaveBtn">Save &amp; Start →</button>
     <div class="modal-note">Keys stored only in your browser</div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="overlay hidden" id="editModal">
+  <div class="edit-modal">
+    <div class="modal-section-title" style="margin-bottom:14px">Edit Trade</div>
+    <div class="ef-grid">
+      <div class="ef-group"><div class="ef-label">Ticker</div><input class="ef-input" id="ef-ticker" placeholder="NVDA"></div>
+      <div class="ef-group"><div class="ef-label">Date</div><input class="ef-input" id="ef-date" placeholder="12/3"></div>
+      <div class="ef-group"><div class="ef-label">Direction</div>
+        <select class="ef-select" id="ef-direction">
+          <option value="">—</option><option value="Long">Long</option><option value="Short">Short</option>
+        </select>
+      </div>
+      <div class="ef-group"><div class="ef-label">Result</div>
+        <select class="ef-select" id="ef-result">
+          <option value="Open">Open</option><option value="Win">Win</option>
+          <option value="Loss">Loss</option><option value="Breakeven">Breakeven</option>
+        </select>
+      </div>
+      <div class="ef-group"><div class="ef-label">Setup</div>
+        <select class="ef-select" id="ef-setup">
+          <option value="">—</option><option value="breakout">Breakout</option>
+          <option value="pullback_ema">EMA Pullback</option><option value="range">Range</option>
+          <option value="vcp">VCP</option><option value="other">Other</option>
+        </select>
+      </div>
+      <div class="ef-group"><div class="ef-label">Emotion</div>
+        <select class="ef-select" id="ef-emotion">
+          <option value="">—</option><option value="calm">Calm</option><option value="disciplined">Disciplined</option>
+          <option value="anxious">Anxious</option><option value="FOMO">FOMO</option><option value="revenge">Revenge</option>
+        </select>
+      </div>
+      <div class="ef-group"><div class="ef-label">Entry Price</div><input class="ef-input" id="ef-entry" placeholder="138.50" type="number" step="0.01"></div>
+      <div class="ef-group"><div class="ef-label">Stop Price</div><input class="ef-input" id="ef-stop" placeholder="134.00" type="number" step="0.01"></div>
+      <div class="ef-group"><div class="ef-label">Target Price</div><input class="ef-input" id="ef-target" placeholder="148.00" type="number" step="0.01"></div>
+      <div class="ef-group"><div class="ef-label">Position Size</div><input class="ef-input" id="ef-size" placeholder="2%"></div>
+      <div class="ef-group"><div class="ef-label">R at Entry</div><input class="ef-input" id="ef-rentry" placeholder="2.5" type="number" step="0.1"></div>
+      <div class="ef-group"><div class="ef-label">Actual R</div><input class="ef-input" id="ef-actualr" placeholder="+1.9" type="number" step="0.1"></div>
+      <div class="ef-group"><div class="ef-label">Execution (1–5)</div><input class="ef-input" id="ef-exec" placeholder="4" type="number" min="1" max="5" step="1"></div>
+      <div class="ef-group ef-full"><div class="ef-label">Did Right</div><textarea class="ef-textarea" id="ef-didright" placeholder="What you executed well…"></textarea></div>
+      <div class="ef-group ef-full"><div class="ef-label">Would Change</div><textarea class="ef-textarea" id="ef-wouldchange" placeholder="What you'd do differently…"></textarea></div>
+    </div>
+    <div class="edit-actions">
+      <button class="edit-cancel" onclick="hideEditModal()">Cancel</button>
+      <button class="edit-save" onclick="saveEdit()">Save Changes</button>
+    </div>
   </div>
 </div>
 
@@ -835,16 +909,27 @@ function buildCard(t) {
     ? '$' + parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
     : '—';
 
+  const id = t._id;
   card.innerHTML = `
     <div class="c-head">
       <div>
         <div class="c-ticker">${esc(t.ticker || '???')}</div>
         <div class="c-date">${esc(t.date || '—')}</div>
       </div>
-      <div class="c-badges">
-        ${dirCls  ? `<span class="badge ${dirCls}">${esc(dir)}</span>` : ''}
-        ${result  ? `<span class="badge ${resCls}">${esc(result)}</span>` : ''}
-        ${sLabel  ? `<span class="badge b-setup">${esc(sLabel)}</span>` : ''}
+      <div style="display:flex;align-items:flex-start;gap:6px">
+        <div class="c-badges">
+          ${dirCls  ? `<span class="badge ${dirCls}">${esc(dir)}</span>` : ''}
+          ${result  ? `<span class="badge ${resCls}">${esc(result)}</span>` : ''}
+          ${sLabel  ? `<span class="badge b-setup">${esc(sLabel)}</span>` : ''}
+        </div>
+        <div class="card-actions">
+          <button class="ca-btn" onclick="editCard(${id})" title="Edit">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="ca-btn del" onclick="deleteCard(${id})" title="Delete">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
       </div>
     </div>
     <div class="c-body">
@@ -911,6 +996,87 @@ function updateLogStats() {
   const avgR = rArr.length ? (rArr.reduce((a,b)=>a+b,0)/rArr.length).toFixed(2) : null;
   el.textContent = `${wr}% win · ${wins}W ${closed.length-wins}L${avgR?' · avg '+avgR+'R':''}`;
 }
+
+/* ═══════════════════════════════════════════════════
+   EDIT / DELETE
+═══════════════════════════════════════════════════ */
+let editingId = null;
+
+function deleteCard(id) {
+  if (!confirm('Delete this trade? This cannot be undone.')) return;
+  trades = trades.filter(t => t._id !== id);
+  save();
+  renderCards();
+  updateTradeCount();
+}
+
+function editCard(id) {
+  const t = trades.find(t => t._id === id);
+  if (!t) return;
+  editingId = id;
+
+  // Populate form
+  document.getElementById('ef-ticker').value      = t.ticker        || '';
+  document.getElementById('ef-date').value         = t.date          || '';
+  document.getElementById('ef-direction').value    = t.direction     || '';
+  document.getElementById('ef-result').value       = t.result        || 'Open';
+  document.getElementById('ef-setup').value        = t.setup_type    || '';
+  document.getElementById('ef-emotion').value      = t.emotional_state || '';
+  document.getElementById('ef-entry').value        = t.entry_price   != null ? t.entry_price  : '';
+  document.getElementById('ef-stop').value         = t.stop_price    != null ? t.stop_price   : '';
+  document.getElementById('ef-target').value       = t.target_price  != null ? t.target_price : '';
+  document.getElementById('ef-size').value         = t.position_size != null ? t.position_size: '';
+  document.getElementById('ef-rentry').value       = t.r_multiple_entry != null ? t.r_multiple_entry : '';
+  document.getElementById('ef-actualr').value      = t.actual_r      != null ? t.actual_r     : '';
+  document.getElementById('ef-exec').value         = t.execution_quality != null ? t.execution_quality : '';
+  document.getElementById('ef-didright').value     = t.did_right     || '';
+  document.getElementById('ef-wouldchange').value  = t.would_change  || '';
+
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function hideEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+  editingId = null;
+}
+
+function saveEdit() {
+  if (editingId === null) return;
+  const idx = trades.findIndex(t => t._id === editingId);
+  if (idx === -1) return;
+
+  const num = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
+  const str = v => v.trim() || null;
+
+  trades[idx] = {
+    ...trades[idx],
+    ticker:            document.getElementById('ef-ticker').value.trim().toUpperCase() || trades[idx].ticker,
+    date:              str(document.getElementById('ef-date').value),
+    direction:         document.getElementById('ef-direction').value  || null,
+    result:            document.getElementById('ef-result').value     || 'Open',
+    setup_type:        document.getElementById('ef-setup').value      || null,
+    emotional_state:   document.getElementById('ef-emotion').value    || null,
+    entry_price:       num(document.getElementById('ef-entry').value),
+    stop_price:        num(document.getElementById('ef-stop').value),
+    target_price:      num(document.getElementById('ef-target').value),
+    position_size:     str(document.getElementById('ef-size').value),
+    r_multiple_entry:  num(document.getElementById('ef-rentry').value),
+    actual_r:          num(document.getElementById('ef-actualr').value),
+    execution_quality: num(document.getElementById('ef-exec').value),
+    did_right:         document.getElementById('ef-didright').value.trim(),
+    would_change:      document.getElementById('ef-wouldchange').value.trim(),
+  };
+
+  save();
+  renderCards();
+  updateTradeCount();
+  hideEditModal();
+}
+
+// Close edit modal on backdrop click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) hideEditModal();
+});
 
 /* ═══════════════════════════════════════════════════
    GITHUB GIST SYNC
