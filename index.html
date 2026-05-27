@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TradeLog — AI Trading Journal</title>
+<meta name="theme-color" content="#080808">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TradeLog">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -188,6 +193,74 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .sync-chip.ok     {color:var(--green);border-color:#183322}
 .sync-chip.err    {color:var(--red);border-color:#331818;cursor:pointer}
 .sync-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* ── MOBILE TAB BAR ── */
+.tab-bar{display:none}
+
+@media(max-width:700px){
+  /* Header: compact */
+  header{padding:0 12px;height:42px}
+  .logo{font-size:13px}
+  .trade-count{display:none}
+  .btn{font-size:9px;padding:4px 8px;letter-spacing:0.5px}
+  .hdr-right{gap:4px}
+  /* hide review/clear labels on very small */
+  .btn-review{padding:4px 8px}
+
+  /* Panels: stack, show only active */
+  .panels{flex-direction:column;position:relative}
+  .chat-panel{width:100%;border-right:none;border-bottom:none;
+    position:absolute;inset:0;bottom:52px;
+    transform:translateX(0);transition:transform .2s ease,opacity .2s ease}
+  .log-panel{position:absolute;inset:0;bottom:52px;
+    transform:translateX(100%);transition:transform .2s ease,opacity .2s ease}
+
+  /* Active/inactive tab panels */
+  .chat-panel.tab-hidden{transform:translateX(-100%);pointer-events:none}
+  .log-panel.tab-active {transform:translateX(0)}
+
+  /* Cards: single column, full width */
+  .cards-grid{grid-template-columns:1fr;padding:10px}
+
+  /* Input: bigger touch targets */
+  .chat-ta{font-size:14px;padding:10px 12px;min-height:44px}
+  .send-btn{width:44px;height:44px}
+  .input-area{padding:8px}
+
+  /* Messages: slightly bigger text */
+  .msg-text,.msg-ok,.msg-flag{font-size:13px}
+
+  /* Modal: full-width on mobile */
+  .modal{padding:20px;border-radius:7px;max-height:90vh;overflow-y:auto}
+  .modal-input{font-size:14px;padding:11px 12px}
+
+  /* Panel labels: hide on mobile (tab bar replaces them) */
+  .panel-label,.log-hdr{display:none}
+
+  /* TAB BAR */
+  .tab-bar{
+    display:flex;position:fixed;bottom:0;left:0;right:0;height:52px;
+    background:var(--bg);border-top:1px solid var(--border);z-index:50;
+    flex-shrink:0;
+  }
+  .tab-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;background:transparent;border:none;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.8px;
+    text-transform:uppercase;color:var(--text3);transition:color .15s;padding-bottom:2px;
+  }
+  .tab-btn svg{width:18px;height:18px;stroke:currentColor}
+  .tab-btn.active{color:var(--green)}
+  .tab-btn .tab-badge{
+    position:absolute;top:6px;right:calc(50% - 18px);
+    background:var(--green);color:#000;font-size:8px;font-weight:700;
+    padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;
+    display:none;
+  }
+  .tab-btn.has-badge .tab-badge{display:block}
+  /* sync chip: smaller on mobile */
+  .sync-chip{font-size:9px;padding:2px 7px}
+}
 </style>
 </head>
 <body>
@@ -275,6 +348,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
   </div>
 
+</div>
+
+<!-- MOBILE TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabChat" onclick="switchTab('chat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    Chat
+  </button>
+  <button class="tab-btn" id="tabLog" onclick="switchTab('log')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+    Log
+    <span class="tab-badge" id="logBadge"></span>
+  </button>
 </div>
 
 <script>
@@ -554,6 +645,11 @@ async function sendMessage() {
         trades.push({ ...tradeData, _id: Date.now() });
         renderCards();
         updateTradeCount();
+        // On mobile: briefly show the new card then return to chat
+        if (window.innerWidth <= 700) {
+          switchTab('log');
+          setTimeout(() => switchTab('chat'), 1800);
+        }
       }
     }
     save();
@@ -796,6 +892,13 @@ function buildCard(t) {
 function updateTradeCount() {
   const n = trades.length;
   document.getElementById('tradeCount').textContent = `${n} trade${n!==1?'s':''}`;
+  // Mobile tab badge
+  const badge  = document.getElementById('logBadge');
+  const tabBtn = document.getElementById('tabLog');
+  if (badge) {
+    badge.textContent = n;
+    tabBtn.classList.toggle('has-badge', n > 0);
+  }
 }
 
 function updateLogStats() {
@@ -905,6 +1008,33 @@ function syncChipClick() {
 }
 
 /* ═══════════════════════════════════════════════════
+   MOBILE TABS
+═══════════════════════════════════════════════════ */
+let activeTab = 'chat';
+
+function switchTab(tab) {
+  activeTab = tab;
+  const chatPanel = document.querySelector('.chat-panel');
+  const logPanel  = document.querySelector('.log-panel');
+  const tabChat   = document.getElementById('tabChat');
+  const tabLog    = document.getElementById('tabLog');
+
+  if (tab === 'chat') {
+    chatPanel.classList.remove('tab-hidden');
+    logPanel.classList.remove('tab-active');
+    tabChat.classList.add('active');
+    tabLog.classList.remove('active');
+    // Focus input
+    setTimeout(() => document.getElementById('chatInput').focus(), 250);
+  } else {
+    chatPanel.classList.add('tab-hidden');
+    logPanel.classList.add('tab-active');
+    tabLog.classList.add('active');
+    tabChat.classList.remove('active');
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    UTILS
 ═══════════════════════════════════════════════════ */
 function esc(s){
@@ -917,6 +1047,94 @@ function autoResize(el){
   el.style.height='auto';
   el.style.height=Math.min(el.scrollHeight,110)+'px';
 }
+
+/* ═══════════════════════════════════════════════════
+   PWA — generated icon + manifest (no extra files needed)
+═══════════════════════════════════════════════════ */
+function drawCandle(ctx, s, x, wickTop, bodyTop, bodyH, wickBot, color) {
+  const w  = 24 * s;
+  const cx = (x + 12) * s;
+  const ww = 3.5 * s;
+  ctx.fillStyle = color;
+  ctx.fillRect(cx - ww/2, wickTop  * s, ww, (bodyTop - wickTop) * s);
+  const r = Math.max(2, 3 * s);
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x * s, bodyTop * s, w, bodyH * s, r);
+  else               ctx.rect(x * s, bodyTop * s, w, bodyH * s);
+  ctx.fill();
+  ctx.fillRect(cx - ww/2, (bodyTop + bodyH) * s, ww, (wickBot - bodyTop - bodyH) * s);
+}
+
+function generateIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const s = size / 192;
+
+  // Background
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, size, size);
+
+  // Subtle inner border
+  ctx.strokeStyle = '#181818';
+  ctx.lineWidth = 4 * s;
+  ctx.strokeRect(2*s, 2*s, size - 4*s, size - 4*s);
+
+  // 3 candlesticks  x  wickTop  bodyTop  bodyH  wickBot  color
+  drawCandle(ctx, s,  28,  54,  80, 50, 150, '#2CC84A'); // green
+  drawCandle(ctx, s,  84,  36,  56, 58, 142, '#e84040'); // red
+  drawCandle(ctx, s, 140,  26,  46, 74, 148, '#2CC84A'); // green tall
+
+  // Green bottom accent bar
+  ctx.fillStyle = '#2CC84A';
+  ctx.fillRect(0, size - Math.round(5*s), size, Math.round(5*s));
+
+  // Tiny "TL" label bottom-left for large sizes
+  if (size >= 192) {
+    ctx.fillStyle = '#2a2a2a';
+    ctx.font = `bold ${Math.round(18*s)}px monospace`;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('TL', Math.round(12*s), size - Math.round(10*s));
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
+window.addEventListener('load', function setupPWA() {
+  const i192 = generateIcon(192);
+  const i512 = generateIcon(512);
+  const i32  = generateIcon(32);
+
+  // Favicon
+  let fav = document.querySelector("link[rel='icon']");
+  if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+  fav.href = i32;
+
+  // Apple touch icon
+  let apple = document.querySelector("link[rel='apple-touch-icon']");
+  if (!apple) { apple = document.createElement('link'); apple.rel = 'apple-touch-icon'; document.head.appendChild(apple); }
+  apple.href = i192;
+
+  // Web app manifest (injected as blob so no extra file needed)
+  const manifest = {
+    name: 'TradeLog',
+    short_name: 'TradeLog',
+    description: 'AI Trading Journal',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: '#080808',
+    theme_color: '#080808',
+    icons: [
+      { src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  let mLink = document.querySelector("link[rel='manifest']");
+  if (!mLink) { mLink = document.createElement('link'); mLink.rel = 'manifest'; document.head.appendChild(mLink); }
+  mLink.href = URL.createObjectURL(blob);
+});
 </script>
 </body>
 </html>
