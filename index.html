@@ -916,20 +916,10 @@ function buildCard(t) {
         <div class="c-ticker">${esc(t.ticker || '???')}</div>
         <div class="c-date">${esc(t.date || '—')}</div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:6px">
-        <div class="c-badges">
-          ${dirCls  ? `<span class="badge ${dirCls}">${esc(dir)}</span>` : ''}
-          ${result  ? `<span class="badge ${resCls}">${esc(result)}</span>` : ''}
-          ${sLabel  ? `<span class="badge b-setup">${esc(sLabel)}</span>` : ''}
-        </div>
-        <div class="card-actions">
-          <button class="ca-btn" onclick="editCard(${id})" title="Edit">
-            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="ca-btn del" onclick="deleteCard(${id})" title="Delete">
-            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-          </button>
-        </div>
+      <div class="c-badges">
+        ${dirCls  ? `<span class="badge ${dirCls}">${esc(dir)}</span>` : ''}
+        ${result  ? `<span class="badge ${resCls}">${esc(result)}</span>` : ''}
+        ${sLabel  ? `<span class="badge b-setup">${esc(sLabel)}</span>` : ''}
       </div>
     </div>
     <div class="c-body">
@@ -966,6 +956,14 @@ function buildCard(t) {
         ${t.did_right    ? `<div class="note-row"><div class="note-lbl">Did Right</div><div class="note-txt">${esc(t.did_right)}</div></div>` : ''}
         ${t.would_change ? `<div class="note-row"><div class="note-lbl">Would Change</div><div class="note-txt">${esc(t.would_change)}</div></div>` : ''}
       </div>` : ''}
+      <div class="card-actions" style="justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);margin-top:2px">
+        <button class="ca-btn" onclick="editCard(${id})" title="Edit">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="ca-btn del" onclick="deleteCard(${id})" title="Delete">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
     </div>`;
 
   return card;
